@@ -1,6 +1,7 @@
 -- main.lua
 local Sprite = require("sprite")
 local FontManager = require("font_manager")
+local Easing = require("easing")
 
 local VIRTUAL_WIDTH = 1920
 local VIRTUAL_HEIGHT = 1080
@@ -195,23 +196,12 @@ local function degToRad(degrees)
     return degrees * (math.pi / 180)
 end
 
---- Performs a linear interpolation with an ease-out quadratic effect.
---- @param a number - The starting value.
---- @param b number - The target value.
---- @param t number - The progress (0 to 1).
---- @return number - The interpolated value.
-function lerpEaseOut(a, b, t)
-    t = math.max(0, math.min(1, t))
-    local easedT = 1 - (1 - t) * (1 - t)
-    return a + (b - a) * easedT
-end
-
 --- Updates game logic and handles animations.
 --- @param dt number - The delta time since the last update.
 function love.update(dt)
     -- Handle button scale animation
     if buttonAnimation then
-        button.scale = lerpEaseOut(0.7, 0.75, buttonAnimationState)
+        button.scale = Easing.lerpEaseInOutBack(0.7, 0.75, buttonAnimationState)
         buttonAnimationState = buttonAnimationState + dt * 3
 
         -- Update position after scaling
@@ -242,13 +232,13 @@ function love.draw()
         -- Clear canvas with background color
         love.graphics.clear(myColors.bg[1], myColors.bg[2], myColors.bg[3])
         
-        -- Draw hand text
-        love.graphics.setColor(myColors.text_2[1], myColors.text_2[2], myColors.text_2[3])
-        drawRotatedText(handText, handTextPosition.x, lerpEaseOut(0, handTextPosition.y, textAnimationState), degToRad(-15), gameFont)
+    -- Draw hand text
+    love.graphics.setColor(myColors.text_2[1], myColors.text_2[2], myColors.text_2[3])
+    drawRotatedText(handText, handTextPosition.x, Easing.lerpEaseOut(-screenH/4, handTextPosition.y, textAnimationState), degToRad(-15), gameFont)
 
-        -- Draw hold text
-        love.graphics.setColor(holdColors[holdIndex][1], holdColors[holdIndex][2], holdColors[holdIndex][3])
-        drawRotatedText("on " .. holdText, lerpEaseOut(0, holdTextPosition.x, textAnimationState), holdTextPosition.y, degToRad(-15), gameFont)
+    -- Draw hold text
+    love.graphics.setColor(holdColors[holdIndex][1], holdColors[holdIndex][2], holdColors[holdIndex][3])
+    drawRotatedText("on " .. holdText, Easing.lerpEaseInOutBack(-screenW/4, holdTextPosition.x, textAnimationState), holdTextPosition.y, degToRad(-15), gameFont)
 
         -- Reset color
         love.graphics.setColor(myColors.white)
