@@ -257,7 +257,7 @@ function love.draw()
     love.graphics.setCanvas()
 
     -- 2. Draw the canvas to the screen with scaling and offsets
-    love.graphics.clear(0, 0, 0, 1) -- Clear window with black
+    love.graphics.clear(myColors.bg[1], myColors.bg[2], myColors.bg[3]) -- Clear window with game background color
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.draw(canvas, offsetX, offsetY, 0, scale, scale)
 end
