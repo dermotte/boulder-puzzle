@@ -113,6 +113,14 @@ function love.resize(w, h)
     updateScale()
 end
 
+-- Offers full screen toggle with F11
+function love.keypressed(key)
+    if key == "f11" then
+        local isFullscreen = love.window.getFullscreen()
+        love.window.setFullscreen(not isFullscreen)
+    end
+end
+
 --- Handles mouse click events.
 function love.mousepressed(x, y, mbtn, istouch, presses)
     -- Transform mouse coordinates to virtual space
