@@ -1,6 +1,6 @@
 # Boulder Puzzle
 
-Ever wanted to have fun training your boulder moves? Boulder Puzzle is a random pattern generator: press a button, move on the spray wall. It's that simple.
+Ever wanted to have fun training your boulder moves? *Boulder Puzzle* is a random pattern generator: press a button, move on the spray wall. It's that simple.
 
 Developed in LÖVE, using Lua, with a button from kenney.nl, icon from phosphor icons and a font from Vernon Adams.
 
