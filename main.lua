@@ -72,6 +72,12 @@ local function updateScale()
 end
 
 function love.load()
+    -- android specific code
+    local os = love.system.getOS()
+    
+    if os == "Android" then
+        love.window.setMode(0, 0, {fullscreen = true})
+    end
     -- Get screen dimensions for virtual space
     screenW = VIRTUAL_WIDTH
     screenH = VIRTUAL_HEIGHT
