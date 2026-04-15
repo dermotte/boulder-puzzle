@@ -43,30 +43,20 @@ local holdColors = {
 }
 
 local myColors = Themes.ocean
-
 local gameFont
-local button  -- Button sprite object
 local screenW
 local screenH
 
-local handOptions = {"Left Hand", "Right Hand", "Both Hands", "Left Foot", "Right Foot"}
-local handText
-local handIndex
+-- Scene Management
+local scenes = {
+    menu = require("menu"),
+    puzzle = require("puzzle"),
+    config = require("config")
+}
+local currentScene = nil
 
-local holdOptions = {"Green", "Blue", "Yellow", "Red", "Orange", "Black", "White", "Purple"}
-local holdText
-local holdIndex
-
--- Animation
-local buttonAnimation = false
-local buttonAnimationState = 0
-local buttonScale = 0.75
-
-local textAnimation = false
-local textAnimationState = 1
-
-local handTextPosition
-local holdTextPosition
+-- Persistent Context
+local ctx = {}
 
 --- Initializes game state, assets, and UI elements.
 local function updateScale()
@@ -90,42 +80,27 @@ function love.load()
     canvas = love.graphics.newCanvas(VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
     updateScale()
 
-    -- Initialize button sprite
-    button = Sprite.new("assets/button_round_depth_flat.png", screenW/2, screenH/2)
-    button.scale = buttonScale
-
-    -- Position the button relative to virtual screen dimensions
-    button.x = screenW - (button.w*button.scale)/2 - screenW/8
-    button.y = screenH - (button.h*button.scale) - screenH/8
-
-    -- Set text layout positions
-    handTextPosition = {
-        x = 3 * (screenW / 8),
-        y =  2 * (screenH / 5),
-    }
-    holdTextPosition = {
-        x = 4 * (screenW / 8), 
-        y = 3 * (screenH / 5),
-    }
-
-    -- Define button click behavior
-    button.onClick = function()
-        handText, handIndex = getRandomFromList(handOptions, handIndex)
-        holdText, holdIndex = getRandomFromList(holdOptions, holdIndex)
-
-        -- Trigger animations
-        buttonAnimation = true
-        textAnimation = true
-        textAnimationState = 0
-    end
-
     -- Load font assets
     gameFont = FontManager.get("assets/fonts/CarterOne-Regular.ttf", 256)
+    smallGameFont = FontManager.get("assets/fonts/CarterOne-Regular.ttf", 160)
 
-    -- Initialize game state and random seed
-    math.randomseed(os.time())
-    handText, handIndex = getRandomFromList(handOptions, handIndex)
-    holdText, holdIndex = getRandomFromList(holdOptions, holdIndex)
+    -- Setup persistent context
+    ctx.screenW = screenW
+    ctx.screenH = screenH
+    ctx.gameFont = gameFont
+    ctx.smallGameFont = smallGameFont
+    ctx.myColors = myColors
+    ctx.holdColors = holdColors
+    ctx.switchScene = function(sceneName)
+        currentScene = scenes[sceneName]
+        if currentScene and currentScene.load then
+            currentScene.load(ctx)
+        end
+    end
+
+    -- Start with menu
+    currentScene = scenes.menu
+    currentScene.load(ctx)
 end 
 
 function love.resize(w, h)
@@ -133,117 +108,32 @@ function love.resize(w, h)
 end
 
 --- Handles mouse click events.
---- @param x number - The x-coordinate of the mouse click.
---- @param y number - The y-coordinate of the mouse click.
---- @param mbtn number - The mouse button pressed (1 for left).
---- @param istouch boolean - Whether the event was a touch.
---- @param presses number - Number of presses in the sequence.
 function love.mousepressed(x, y, mbtn, istouch, presses)
     -- Transform mouse coordinates to virtual space
     local virtualX = (x - offsetX) / scale
     local virtualY = (y - offsetY) / scale
 
-    -- Check if Left Mouse Button (1) was pressed
-    if mbtn == 1 then
-        if Sprite.isMouseOver(button, virtualX, virtualY) then
-            if button.onClick ~= nil then
-                button.onClick()
-            end
-        end
+    if currentScene and currentScene.mousepressed then
+        currentScene.mousepressed(virtualX, virtualY, mbtn, istouch, presses, ctx)
     end
 end
 
---- Draws text at a specified position and angle.
---- @param text string - The text to draw.
---- @param x number - The x-coordinate for the center of the text.
---- @param y number - The y-coordinate for the center of the text.
---- @param angle number - The rotation angle in radians.
---- @param font love.Font - The font object to use.
-function drawRotatedText(text, x, y, angle, font)
-    love.graphics.setFont(font)
-    
-    local width = font:getWidth(text)
-    local height = font:getHeight()
-
-    love.graphics.push()          -- Save current state
-        love.graphics.translate(x, y) -- Move "the world" to the target X, Y
-        love.graphics.rotate(angle)   -- Rotate "the world"
-        
-        -- Draw text offset by half its size to center it at (x, y)
-        love.graphics.print(text, -width/2, -height/2)
-    love.graphics.pop()           -- Restore everything else to normal
-end
-
---- Selects a random item from a list and returns both its value and its index.
---- @param list table - The list to select from.
---- @param lastIndex number|nil - An index to avoid re-selecting.
---- @return any - The selected value.
---- @return number|nil - The index of the selected value.
-function getRandomFromList(list, lastIndex)
-    if #list == 0 then return nil, nil end
-    local index = math.random(1, #list)
-    if index == lastIndex then 
-        index = math.random(1, #list)
-    end
-    local value = list[index]
-    return value, index
-end
-
---- Converts an angle from degrees to radians.
---- @param degrees number - The angle in degrees.
---- @return number - The angle in radians.
-local function degToRad(degrees)
-    return degrees * (math.pi / 180)
-end
-
---- Updates game logic and handles animations.
---- @param dt number - The delta time since the last update.
 function love.update(dt)
-    -- Handle button scale animation
-    if buttonAnimation then
-        button.scale = Easing.lerpEaseInOutBack(0.7, 0.75, buttonAnimationState)
-        buttonAnimationState = buttonAnimationState + dt * 3
-
-        -- Update position after scaling
-        button.x = screenW - (button.w*button.scale)/2 - screenW/8
-        button.y = screenH - (button.h*button.scale) - screenH/8
-    end
-
-    if buttonAnimationState > 1 then
-        buttonAnimation = false
-        buttonAnimationState = 0
-    end
-
-    -- Handle text entry animation
-    if textAnimation then
-        textAnimationState = textAnimationState + dt*3
-    end
-
-    if textAnimationState > 1 then
-        textAnimation = false
-        textAnimationState = 1
+    if currentScene and currentScene.update then
+        currentScene.update(dt, ctx)
     end
 end
 
---- Renders the game scene, including backgrounds and UI elements.
 function love.draw()
     -- 1. Render everything to the canvas
     love.graphics.setCanvas(canvas)
         -- Clear canvas with background color
         love.graphics.clear(myColors.bg[1], myColors.bg[2], myColors.bg[3])
         
-    -- Draw hand text
-    love.graphics.setColor(myColors.text_2[1], myColors.text_2[2], myColors.text_2[3])
-    drawRotatedText(handText, handTextPosition.x, Easing.lerpEaseOut(-screenH/4, handTextPosition.y, textAnimationState), degToRad(-15), gameFont)
+    if currentScene and currentScene.draw then
+        currentScene.draw(ctx)
+    end
 
-    -- Draw hold text
-    love.graphics.setColor(holdColors[holdIndex][1], holdColors[holdIndex][2], holdColors[holdIndex][3])
-    drawRotatedText("on " .. holdText, Easing.lerpEaseInOutBack(-screenW/4, holdTextPosition.x, textAnimationState), holdTextPosition.y, degToRad(-15), gameFont)
-
-        -- Reset color
-        love.graphics.setColor(myColors.white)
-
-        Sprite.draw(button)
     love.graphics.setCanvas()
 
     -- 2. Draw the canvas to the screen with scaling and offsets
