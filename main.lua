@@ -97,12 +97,14 @@ function love.load()
     ctx.smallGameFont = smallGameFont
     ctx.myColors = myColors
     ctx.holdColors = holdColors
+    ctx.soundOn = true
     ctx.switchScene = function(sceneName)
         currentScene = scenes[sceneName]
         if currentScene and currentScene.load then
             currentScene.load(ctx)
         end
     end
+
 
     -- Start with menu
     currentScene = scenes.menu
