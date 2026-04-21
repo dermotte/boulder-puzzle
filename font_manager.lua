@@ -13,7 +13,7 @@ function FontManager.get(path, size)
     
     -- Load and cache if not already present
     if not FontManager.fonts[key] then
-        print("Loading new font size: " .. key)
+        -- print("Loading new font size: " .. key)
         FontManager.fonts[key] = love.graphics.newFont(path, size)
     end
     
