@@ -89,12 +89,16 @@ function love.load()
     -- Load font assets
     gameFont = FontManager.get("assets/fonts/CarterOne-Regular.ttf", 256)
     smallGameFont = FontManager.get("assets/fonts/CarterOne-Regular.ttf", 160)
+    miniGameFont = FontManager.get("assets/fonts/CarterOne-Regular.ttf", 128)
+    microGameFont = FontManager.get("assets/fonts/CarterOne-Regular.ttf", 96)
 
     -- Setup persistent context
     ctx.screenW = screenW
     ctx.screenH = screenH
     ctx.gameFont = gameFont
     ctx.smallGameFont = smallGameFont
+    ctx.miniGameFont = miniGameFont
+    ctx.microGameFont = microGameFont
     ctx.myColors = myColors
     ctx.holdColors = holdColors
     ctx.soundOn = true

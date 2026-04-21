@@ -18,7 +18,7 @@ local handTextPosition
 local holdTextPosition
 
 -- Options
-local handOptions = {"Left Hand", "Right Hand", "Both Hands", "Left Foot", "Right Foot"}
+local handOptions = {"Left Hand", "Right Hand", "Both Hands", "Left Foot", "Right Foot", "Both Feet"}
 local holdOptions = {"Green", "Blue", "Yellow", "Red", "Orange", "Black", "White", "Purple"}
 
 --- Selects a random item from a list and returns both its value and its index.
